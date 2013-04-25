@@ -145,11 +145,16 @@ DWORD getParameterDefault(DWORD index)
 		if (dwRet == FF_FAIL) return FF_FAIL;
 	}
 
+	DWORD dwType = s_pPrototype->GetParamType(DWORD(index));
 	void* pValue = s_pPrototype->GetParamDefault(index);
 	if (pValue == NULL) return FF_FAIL;
 	else {
 		DWORD dwRet;
-		memcpy(&dwRet, pValue, 4);
+		if ( dwType == FF_TYPE_TEXT ) {
+			dwRet = (DWORD) pValue;
+		} else {
+			memcpy(&dwRet, pValue, 4);
+		}
 		return dwRet;
 	}
 }
@@ -253,11 +258,15 @@ DWORD instantiateGL(const FFGLViewportStruct *pGLViewport)
 	// Initializing instance with default values
 	for (int i = 0; i < s_pPrototype->GetNumParams(); ++i)
   {
-		//DWORD dwType = s_pPrototype->GetParamType(DWORD(i));
+		DWORD dwType = s_pPrototype->GetParamType(DWORD(i));
 		void* pValue = s_pPrototype->GetParamDefault(DWORD(i));
 		SetParameterStruct ParamStruct;
 		ParamStruct.ParameterNumber = DWORD(i);
-		memcpy(&ParamStruct.NewParameterValue, pValue, 4);
+		if ( dwType == FF_TYPE_TEXT ) {
+			ParamStruct.NewParameterValue = (DWORD) pValue;
+		} else {
+			memcpy(&ParamStruct.NewParameterValue, pValue, 4);
+		}
 		dwRet = pInstance->SetParameter(&ParamStruct);
 		if (dwRet == FF_FAIL)
     {
